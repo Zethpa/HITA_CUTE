@@ -7,6 +7,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.switchMap
 import com.stupidtree.hitax.data.model.timetable.Timetable
 import com.stupidtree.hitax.data.repository.TimetableRepository
+import com.stupidtree.component.data.DataState
+import java.io.InputStream
 
 class TimetableManagerViewModel(application: Application) : AndroidViewModel(application) {
     /**
@@ -31,5 +33,12 @@ class TimetableManagerViewModel(application: Application) : AndroidViewModel(app
 
     fun exportToIcs(timetable: Timetable) {
         exportController.value = timetable
+    }
+    
+    /**
+     * 从 ICS 文件导入课表
+     */
+    fun importFromICS(inputStream: InputStream, timetableId: String): LiveData<DataState<Int>> {
+        return timetableRepository.importFromICS(inputStream, timetableId)
     }
 }

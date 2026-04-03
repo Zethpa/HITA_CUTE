@@ -28,6 +28,11 @@ class TimetableManagerActivity :
 
     private lateinit var listAdapter: TimetableListAdapter
     private var editModeHelper: EditModeHelper<Timetable>? = null
+    
+    // ICS 文件选择器
+    private val selectIcsLauncher = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.GetContent()) { uri: android.net.Uri? ->
+        uri?.let { importICS(it) }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,13 +79,17 @@ class TimetableManagerActivity :
         })
         listAdapter.setOnAddClickListener(object : TimetableListAdapter.OnAddClickListener {
             override fun onAddClick(source: TimetableListAdapter.SOURCE) {
-                if (source == TimetableListAdapter.SOURCE.EAS) {
-                    ActivityUtils.startActivity(
-                        this@TimetableManagerActivity,
-                        ImportTimetableActivity::class.java
-                    )
-                } else {
-                    viewModel.startNewTimetable()
+                when (source) {
+                    TimetableListAdapter.SOURCE.EAS -> {
+                        ActivityUtils.startActivity(
+                            this@TimetableManagerActivity,
+                            ImportTimetableActivity::class.java
+                        )
+                    }
+                    TimetableListAdapter.SOURCE.ICS -> {
+                        selectIcsLauncher.launch("text/calendar")
+                    }
+                    else -> {}
                 }
             }
 
@@ -238,5 +247,28 @@ override fun onDelete(toDelete: Collection<Timetable>?) {
             return
         }
         super.onBackPressed()
-}
+    }
+    
+    /**
+     * 导入 ICS 文件到选中的课表
+     */
+    private fun importICS(uri: android.net.Uri) {
+        // 获取当前第一个课表（如果没有则提示创建）
+        val timetables = listAdapter.beans
+        if (timetables.isEmpty()) {
+            Toast.makeText(this, "请先创建一个课表", Toast.LENGTH_SHORT).show()
+            return
+        }
+        
+        // 默认导入到第一个课表，或者让用户选择
+        val targetTimetable = timetables[0]
+        
+        try {
+            val inputStream = contentResolver.openInputStream(uri) ?: return
+            viewModel.importFromICS(inputStream, targetTimetable.id)
+            Toast.makeText(this, "正在导入...", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Toast.makeText(this, "读取文件失败: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
 }

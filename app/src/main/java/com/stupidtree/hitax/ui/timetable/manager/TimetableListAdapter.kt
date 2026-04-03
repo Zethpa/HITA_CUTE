@@ -20,7 +20,7 @@ import com.stupidtree.hitax.utils.TimeTools
 class TimetableListAdapter(context: Context, mBeans: MutableList<Timetable>) :
     BaseCheckableListAdapter<Timetable, RecyclerView.ViewHolder>(context, mBeans) {
 
-    enum class SOURCE { EAS, NEW }
+    enum class SOURCE { EAS, ICS }
 
     interface OnAddClickListener {
         fun onAddClick(source: SOURCE)
@@ -81,11 +81,11 @@ class TimetableListAdapter(context: Context, mBeans: MutableList<Timetable>) :
                 )
             }
         } else if (holder is AHolder) {
-            holder.binding.icon.setOnClickListener {
-                mOnAddClickListener?.onAddClick(SOURCE.NEW)
-            }
             holder.binding.eas.setOnClickListener {
                 mOnAddClickListener?.onAddClick(SOURCE.EAS)
+            }
+            holder.binding.ics.setOnClickListener {
+                mOnAddClickListener?.onAddClick(SOURCE.ICS)
             }
         }
 

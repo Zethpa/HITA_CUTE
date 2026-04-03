@@ -20,22 +20,6 @@
         android:paddingBottom="16dp">
 
         <ImageView
-            android:id="@+id/icon"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_margin="12dp"
-            android:background="@drawable/element_round_white_lighter"
-            android:backgroundTint="?attr/colorPrimary"
-            android:clickable="true"
-            android:focusable="true"
-            android:foreground="?attr/selectableItemBackground"
-            android:padding="18dp"
-            android:theme="@style/ripplePrimary"
-            android:tintMode="src_in"
-            app:srcCompat="@drawable/ic_new_timetable"
-            app:tint="?attr/colorPrimary" />
-
-        <ImageView
             android:id="@+id/eas"
             android:layout_width="80dp"
             android:layout_height="80dp"
@@ -49,6 +33,22 @@
             android:theme="@style/ripplePrimary"
             android:tintMode="src_in"
             app:srcCompat="@drawable/ic_import"
+            app:tint="?attr/colorPrimary" />
+
+        <ImageView
+            android:id="@+id/ics"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="12dp"
+            android:background="@drawable/element_round_white_lighter"
+            android:backgroundTint="?attr/colorPrimary"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:padding="22dp"
+            android:theme="@style/ripplePrimary"
+            android:tintMode="src_in"
+            app:srcCompat="@drawable/ic_baseline_cloud_download_24"
             app:tint="?attr/colorPrimary" />
 
     </LinearLayout>
