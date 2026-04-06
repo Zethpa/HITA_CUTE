@@ -26,7 +26,7 @@ object HoaResourceSource {
             .ignoreHttpErrors(true)
             .timeout(timeout)
             .header("Accept", "application/json")
-            .header("User-Agent", "HITA_L/1.2.1")
+            .header("User-Agent", "HITA_L/${BuildConfig.VERSION_NAME}")
         if (apiKey.isNotBlank()) {
             req.header("X-Api-Key", apiKey)
         }
