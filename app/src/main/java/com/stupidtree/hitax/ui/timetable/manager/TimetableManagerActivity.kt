@@ -251,19 +251,9 @@ override fun onDelete(toDelete: Collection<Timetable>?) {
     }
     
     /**
-     * 导入 ICS 文件到选中的课表
+     * 导入 ICS 文件并创建独立课表
      */
     private fun importICS(uri: android.net.Uri) {
-        // 获取当前第一个课表（如果没有则提示创建）
-        val timetables = listAdapter.beans
-        if (timetables.isEmpty()) {
-            Toast.makeText(this, "请先创建一个课表", Toast.LENGTH_SHORT).show()
-            return
-        }
-        
-        // 默认导入到第一个课表，或者让用户选择
-        val targetTimetable = timetables[0]
-        
         try {
             contentResolver.takePersistableUriPermission(
                 uri,
@@ -278,11 +268,17 @@ override fun onDelete(toDelete: Collection<Timetable>?) {
                 Toast.makeText(this, "无法读取所选 ICS 文件", Toast.LENGTH_SHORT).show()
                 return
             }
-            viewModel.importFromICS(inputStream, targetTimetable.id).observe(this) {
+            val displayName = IcsImportUtils.getDisplayName(this, uri)
+            viewModel.importFromICSAsNewTimetable(inputStream, displayName).observe(this) {
                 when (it.state) {
                     DataState.STATE.SUCCESS -> {
-                        val count = it.data ?: 0
-                        Toast.makeText(this, "成功导入 $count 个课程", Toast.LENGTH_SHORT).show()
+                        val result = it.data ?: return@observe
+                        Toast.makeText(
+                            this,
+                            "已创建课表“${result.timetableName}”，导入 ${result.importedCount} 个课程",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        ActivityUtils.startTimetableDetailActivity(this, result.timetableId)
                     }
                     DataState.STATE.FETCH_FAILED -> {
                         Toast.makeText(this, "导入失败: ${it.message}", Toast.LENGTH_SHORT).show()

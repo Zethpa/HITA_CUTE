@@ -1,7 +1,5 @@
 package com.stupidtree.hitax.utils
 
-import android.graphics.Color
-
 object ColorTools {
     private const val TIME_INTERVAL = 1000 * 60.toLong()
     var lastTimestamp: Long = 0
@@ -26,18 +24,24 @@ object ColorTools {
             colorsQueue.shuffle()
         }
         lastTimestamp = System.currentTimeMillis()
-        return Color.parseColor(colorsQueue.removeAt(0))
+        return parseHexColor(colorsQueue.removeAt(0))
     }
 
 
     fun changeAlpha(color: Int, alpha: Float): Int {
-        return Color.argb(
-            (255 * alpha).toInt(),
-            Color.red(color),
-            Color.green(color),
-            Color.blue(color)
-        )
+        val alphaChannel = (255 * alpha).toInt().coerceIn(0, 255)
+        return (alphaChannel shl 24) or (color and 0x00FFFFFF)
     }
 
+    private fun parseHexColor(raw: String): Int {
+        val normalized = raw.removePrefix("#")
+        val parsed = normalized.toLongOrNull(16)
+            ?: throw IllegalArgumentException("Invalid color: $raw")
+        return when (normalized.length) {
+            6 -> (0xFF000000 or parsed).toInt()
+            8 -> parsed.toInt()
+            else -> throw IllegalArgumentException("Invalid color length: $raw")
+        }
+    }
 
 }

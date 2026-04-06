@@ -288,14 +288,7 @@ class NavigationFragment : BaseFragment<NavigationViewModel, FragmentNavigationB
      */
     private fun importICS(uri: Uri) {
         val context = requireContext()
-        
-        // 检查是否有课表
-        val recentTimetable = viewModel.recentTimetableLiveData.value
-        if (recentTimetable == null) {
-            Toast.makeText(context, "请先创建一个课表", Toast.LENGTH_SHORT).show()
-            return
-        }
-        
+
         try {
             context.contentResolver.takePersistableUriPermission(
                 uri,
@@ -311,13 +304,24 @@ class NavigationFragment : BaseFragment<NavigationViewModel, FragmentNavigationB
                 return
             }
             val timetableRepo = TimetableRepository.getInstance(context.applicationContext as android.app.Application)
-            
-            timetableRepo.importFromICS(inputStream, recentTimetable.id)
+
+            timetableRepo.importFromICSAsNewTimetable(
+                inputStream,
+                IcsImportUtils.getDisplayName(context, uri)
+            )
                 .observe(this) { result ->
                     when (result.state) {
                         com.stupidtree.component.data.DataState.STATE.SUCCESS -> {
-                            val count = result.data ?: 0
-                            Toast.makeText(context, "成功导入 $count 个课程", Toast.LENGTH_SHORT).show()
+                            val importResult = result.data ?: return@observe
+                            Toast.makeText(
+                                context,
+                                "已创建课表“${importResult.timetableName}”，导入 ${importResult.importedCount} 个课程",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            ActivityUtils.startTimetableDetailActivity(
+                                context,
+                                importResult.timetableId
+                            )
                         }
                         com.stupidtree.component.data.DataState.STATE.FETCH_FAILED -> {
                             Toast.makeText(context, "导入失败: ${result.message}", Toast.LENGTH_SHORT).show()

@@ -336,58 +336,9 @@ class TimetableRepository(val application: Application) {
                 var importedCount = 0
                 
                 for (event in events) {
-                    val ei = EventItem()
-                    ei.id = UUID.randomUUID().toString()
-                    ei.timetableId = timetableId
-                    
-                    // 解析事件标题
-                    ei.name = event.summary?.value ?: "未知课程"
-                    
-                    // 解析地点和教师
-                    val locationStr = event.location?.value ?: ""
-                    val parts = locationStr.split(" ", limit = 2)
-                    ei.place = parts.getOrNull(0) ?: ""
-                    ei.teacher = parts.getOrNull(1) ?: ""
-                    
-                    // 解析开始和结束时间
-                    val startDate = event.startDate?.date
-                    val endDate = event.endDate?.date
-                    
-                    if (startDate != null && endDate != null) {
-                        ei.from = java.sql.Timestamp(startDate.time)
-                        ei.to = java.sql.Timestamp(endDate.time)
-                        
-                        // 使用 Calendar 计算节次
-                        val cal = Calendar.getInstance()
-                        cal.time = startDate
-                        val hour = cal.get(Calendar.HOUR_OF_DAY)
-                        val minute = cal.get(Calendar.MINUTE)
-                        
-                        cal.time = endDate
-                        val endHour = cal.get(Calendar.HOUR_OF_DAY)
-                        val endMinute = cal.get(Calendar.MINUTE)
-                        
-                        // 根据时间推断节次（基于默认时间表）
-                        ei.fromNumber = when {
-                            hour < 9 || (hour == 9 && minute < 25) -> 1
-                            hour < 10 || (hour == 10 && minute < 30) -> 3
-                            hour < 12 || (hour == 12 && minute < 15) -> 5
-                            hour < 14 || (hour == 14 && minute < 55) -> 7
-                            hour < 16 || (hour == 16 && minute < 0) -> 9
-                            hour < 17 || (hour == 17 && minute < 45) -> 11
-                            else -> 1
-                        }
-                        
-                        val durationMinutes = (endHour * 60 + endMinute) - (hour * 60 + minute)
-                        ei.lastNumber = (durationMinutes / 45).coerceAtLeast(1)
-                        
-                        ei.type = EventItem.TYPE.OTHER
-                        ei.color = -1
-                        
-                        // 保存到数据库
-                        eventItemDao.insertEventSync(ei)
-                        importedCount++
-                    }
+                    val ei = IcsImportEventMapper.map(event, timetableId) ?: continue
+                    eventItemDao.insertEventSync(ei)
+                    importedCount++
                 }
                 
                 // 同步到云端
@@ -400,6 +351,56 @@ class TimetableRepository(val application: Application) {
             } catch (e: Exception) {
                 e.printStackTrace()
                 res.postValue(DataState(DataState.STATE.FETCH_FAILED, e.message))
+            }
+        }
+        return res
+    }
+
+    fun importFromICSAsNewTimetable(
+        inputStream: InputStream,
+        sourceName: String?
+    ): LiveData<DataState<IcsImportResult>> {
+        val res = MutableLiveData<DataState<IcsImportResult>>()
+        executor.execute {
+            try {
+                val calendar = inputStream.use { CalendarBuilder().build(it) }
+                val bundle = IcsImportBundleBuilder.build(
+                    events = calendar.components.filterIsInstance<VEvent>(),
+                    sourceName = sourceName
+                )
+                timetableDao.saveTimetableSync(bundle.timetable)
+                subjectDao.saveSubjectsSync(bundle.subjects)
+                eventItemDao.saveEvents(bundle.events)
+
+                StupidSync.putHistorySync(
+                    historyTag,
+                    History.ACTION.REQUIRE,
+                    listOf(bundle.timetable.id)
+                )
+                StupidSync.putHistorySync(
+                    "subject",
+                    History.ACTION.REQUIRE,
+                    bundle.subjects.map { it.id }
+                )
+                StupidSync.putHistorySync(
+                    "event",
+                    History.ACTION.REQUIRE,
+                    bundle.events.map { it.id }
+                )
+
+                res.postValue(
+                    DataState(
+                        IcsImportResult(
+                            timetableId = bundle.timetable.id,
+                            timetableName = bundle.timetable.name ?: application.getString(R.string.default_timetable_name),
+                            importedCount = bundle.events.size
+                        )
+                    )
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
+                val message = if (e is IllegalArgumentException) e.message else e.message
+                res.postValue(DataState(DataState.STATE.FETCH_FAILED, message))
             }
         }
         return res
