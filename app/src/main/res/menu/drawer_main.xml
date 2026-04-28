@@ -16,6 +16,10 @@
 <!--        android:icon="@drawable/ic_menu_bug_report"-->
 <!--        android:title="@string/main_drawer_menu_report" />-->
     <item
+        android:id="@+id/drawer_nav_background"
+        android:icon="@drawable/ic_baseline_image_24"
+        android:title="@string/background_settings_title" />
+    <item
         android:id="@+id/drawer_nav_ua"
         android:icon="@drawable/ic_info"
         android:title="@string/name_ua_and_pp" />

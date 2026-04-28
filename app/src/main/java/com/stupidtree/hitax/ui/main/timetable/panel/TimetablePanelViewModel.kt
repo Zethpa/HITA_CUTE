@@ -6,6 +6,7 @@ import com.stupidtree.component.data.SharedPreferenceBooleanLiveData
 import com.stupidtree.component.data.SharedPreferenceIntLiveData
 import com.stupidtree.hitax.data.repository.SubjectRepository
 import com.stupidtree.hitax.data.repository.EasSettingsRepository
+import com.stupidtree.hitax.data.repository.ColorPaletteRepository
 import com.stupidtree.hitax.data.repository.TimetableRepository
 import com.stupidtree.hitax.data.repository.TimetableStyleRepository
 import com.stupidtree.hitax.data.repository.TimetableStyleRepository.Companion.KEY_COLOR_ENABLE
@@ -13,12 +14,16 @@ import com.stupidtree.hitax.data.repository.TimetableStyleRepository.Companion.K
 import com.stupidtree.hitax.data.repository.TimetableStyleRepository.Companion.KEY_FADE_ENABLE
 import com.stupidtree.hitax.data.repository.TimetableStyleRepository.Companion.KEY_LABEL_PERIOD
 import com.stupidtree.hitax.data.repository.TimetableStyleRepository.Companion.KEY_START_DATE
+import com.stupidtree.hitax.data.repository.ThemeColorRepository
+import com.stupidtree.hitax.utils.ColorPalette
+import com.stupidtree.hitax.utils.ThemeColors
 class TimetablePanelViewModel(application: Application) : AndroidViewModel(application) {
 
     private val timetableStyleRepository = TimetableStyleRepository.getInstance(application)
     private val easSettingsRepository = EasSettingsRepository.getInstance(application)
     private val subjectRepository = SubjectRepository.getInstance(application)
     private val timetableRepository = TimetableRepository.getInstance(application)
+    private val colorPaletteRepository = ColorPaletteRepository.getInstance(application)
 
     val startDateLiveData: SharedPreferenceIntLiveData
         get() = timetableStyleRepository.startTimeLiveData
@@ -73,5 +78,21 @@ class TimetablePanelViewModel(application: Application) : AndroidViewModel(appli
 
     fun startResetColor(){
         subjectRepository.actionResetRecentSubjectColors()
+    }
+
+    fun getActivePaletteName(): String {
+        val id = colorPaletteRepository.getActivePaletteId()
+        val palette = ColorPalette.fromId(id)
+        return getApplication<android.app.Application>().getString(palette.displayNameRes)
+    }
+
+    fun getActiveThemeName(): String {
+        val themeId = ThemeColorRepository.getInstance(getApplication()).getActiveThemeId()
+        val option = ThemeColors.fromId(themeId)
+        return getApplication<android.app.Application>().getString(option.displayNameRes)
+    }
+
+    fun applyPalette(palette: ColorPalette.Palette) {
+        subjectRepository.actionApplyPalette(palette)
     }
 }

@@ -7,12 +7,14 @@ import androidx.lifecycle.map
 import com.stupidtree.hitax.data.AppDatabase
 import com.stupidtree.hitax.data.model.timetable.TermSubject
 import com.stupidtree.hitax.ui.timetable.detail.TeacherInfo
+import com.stupidtree.hitax.utils.ColorPalette
 import com.stupidtree.hitax.utils.ColorTools
 import com.stupidtree.sync.StupidSync
 import com.stupidtree.sync.data.model.History
 import java.util.concurrent.Executors
 
 class SubjectRepository(application: Application) {
+    private val app = application
     private val historyTag = "subject"
     private val executor = Executors.newSingleThreadScheduledExecutor()
     private val eventItemDao = AppDatabase.getDatabase(application).eventItemDao()
@@ -118,6 +120,27 @@ class SubjectRepository(application: Application) {
             }
             subjectDao.saveSubjectsSync(subjects)
             StupidSync.putHistorySync(historyTag, History.ACTION.REQUIRE, subjects.getIds())
+        }
+    }
+
+    fun actionApplyPalette(palette: ColorPalette.Palette) {
+        executor.execute {
+            val paletteRepo = ColorPaletteRepository.getInstance(app)
+            paletteRepo.setActivePaletteId(palette.name)
+            ColorTools.applyPalette(palette)
+            val timetables = timetableDao.getAllTimetablesSync()
+            for (tt in timetables) {
+                val subjects = subjectDao.getSubjectsSync(tt.id)
+                for (s in subjects) {
+                    val custom = paletteRepo.getCustomColor(s.id)
+                    if (custom != null) continue
+                    s.color = ColorTools.randomColorMaterial()
+                }
+                subjectDao.saveSubjectsSync(subjects)
+                StupidSync.putHistorySync(
+                    historyTag, History.ACTION.REQUIRE, subjects.getIds()
+                )
+            }
         }
     }
 

@@ -6,7 +6,11 @@ import android.view.HapticFeedbackConstants
 import android.view.View
 import com.stupidtree.hitax.R
 import com.stupidtree.hitax.data.model.timetable.TimeInDay
+import com.stupidtree.hitax.data.repository.ColorPaletteRepository
 import com.stupidtree.hitax.databinding.FragmentTimetablePanelBinding
+import com.stupidtree.hitax.ui.style.PopUpColorPalettePicker
+import com.stupidtree.hitax.ui.style.PopUpThemeColorPicker
+import com.stupidtree.hitax.utils.ColorPalette
 import com.stupidtree.style.widgets.TransparentModeledBottomSheetDialog
 
 class FragmentTimetablePanel : TransparentModeledBottomSheetDialog<TimetablePanelViewModel, FragmentTimetablePanelBinding>() {
@@ -46,6 +50,25 @@ class FragmentTimetablePanel : TransparentModeledBottomSheetDialog<TimetablePane
                 viewModel.triggerAutoReimportNow()
             }
         }
+        binding?.themeColorPreview?.setOnClickListener {
+            PopUpThemeColorPicker().show(childFragmentManager, "pickTheme")
+        }
+        binding?.activePaletteName?.setOnClickListener {
+            val activeId = ColorPaletteRepository
+                .getInstance(requireActivity().application)
+                .getActivePaletteId()
+            PopUpColorPalettePicker()
+                .setActivePaletteId(activeId)
+                .setOnPaletteSelectedListener(object :
+                    PopUpColorPalettePicker.OnPaletteSelectedListener {
+                    override fun onSelected(palette: ColorPalette.Palette) {
+                        viewModel.applyPalette(palette)
+                        binding?.activePaletteName?.text =
+                            getString(palette.displayNameRes)
+                    }
+                })
+                .show(childFragmentManager, "pickPalette")
+        }
 
     }
 
@@ -69,6 +92,8 @@ class FragmentTimetablePanel : TransparentModeledBottomSheetDialog<TimetablePane
         viewModel.autoReimportLiveData.observe(this) {
             binding?.autoReimport?.isChecked = it
         }
+        binding?.activePaletteName?.text = viewModel.getActivePaletteName()
+        binding?.themeColorPreview?.text = viewModel.getActiveThemeName()
     }
 
 

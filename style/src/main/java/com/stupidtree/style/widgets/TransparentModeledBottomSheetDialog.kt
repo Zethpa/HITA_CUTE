@@ -57,7 +57,7 @@ abstract class TransparentModeledBottomSheetDialog<T : ViewModel, V : ViewBindin
         savedInstanceState: Bundle?
     ): View? {
         val contextThemeWrapper =
-            ContextThemeWrapper(context, R.style.AppTheme) // your app theme here
+            ContextThemeWrapper(context, R.style.AppTheme)
         val v = inflater.cloneInContext(contextThemeWrapper)
             .inflate(getLayoutId(), container, false)
         binding = initViewBinding(v)

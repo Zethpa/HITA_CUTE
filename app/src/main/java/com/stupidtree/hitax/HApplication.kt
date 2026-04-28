@@ -139,9 +139,22 @@ class HApplication : Application() {
         })
         StupidSync.setUID(LocalUserRepository.getInstance(this).getLoggedInUser().id)
         handleSSLHandshake()
-        
+
+        // Sync theme config to :style bridge before any Activity starts
+        syncThemeConfig()
+
         // 初始化课程提醒（根据用户设置自动调度或取消）
         CourseReminderScheduler.autoSchedule(this)
+    }
+
+    fun syncThemeConfig() {
+        val prefs = getSharedPreferences("theme_colors", android.content.Context.MODE_PRIVATE)
+        val themeId = prefs.getString("active_theme_id", "blue") ?: "blue"
+        com.stupidtree.style.ThemeConfig.themeStyleRes =
+            com.stupidtree.hitax.utils.ThemeColors.resolveStyleRes(themeId)
+        val option = com.stupidtree.hitax.utils.ThemeColors.fromId(themeId)
+        com.stupidtree.style.ThemeConfig.composePrimaryColor =
+            android.graphics.Color.parseColor(option.primaryColorHex)
     }
 
     private fun handleSSLHandshake() {

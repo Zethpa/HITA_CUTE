@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.switchMap
 import com.stupidtree.hitax.data.model.timetable.EventItem
 import com.stupidtree.hitax.data.model.timetable.TermSubject
+import com.stupidtree.hitax.data.repository.ColorPaletteRepository
 import com.stupidtree.hitax.data.repository.SubjectRepository
 import com.stupidtree.hitax.data.repository.TimetableRepository
 
@@ -16,6 +17,7 @@ class EventItemViewModel(application: Application) : AndroidViewModel(applicatio
      */
     private val subjectRepository = SubjectRepository.getInstance(application)
     private val timetableRepository =TimetableRepository.getInstance(application)
+    private val colorPaletteRepository = ColorPaletteRepository.getInstance(application)
 
     /**
      * 数据区
@@ -33,6 +35,7 @@ class EventItemViewModel(application: Application) : AndroidViewModel(applicatio
     fun changeSubjectColor(color: Int) {
         subjectLiveData.value?.let { subject ->
             subjectRepository.actionChangeSubjectColor(subject.id, color)
+            colorPaletteRepository.setCustomColor(subject.id, color)
         }
     }
 

@@ -7,6 +7,7 @@ import android.graphics.Color
 import android.graphics.DashPathEffect
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
@@ -16,7 +17,9 @@ import com.stupidtree.hitax.data.model.timetable.EventItem
 import com.stupidtree.hitax.data.model.timetable.TimeInDay
 import com.stupidtree.hitax.data.model.timetable.TimePeriodInDay
 import com.stupidtree.hitax.data.model.timetable.Timetable
+import com.stupidtree.hitax.data.repository.BackgroundSettings
 import com.stupidtree.hitax.ui.main.timetable.TimetableStyleSheet
+import com.stupidtree.hitax.utils.BackgroundHelper
 import com.stupidtree.hitax.utils.TimeTools
 import java.util.Calendar
 import kotlin.math.max
@@ -40,6 +43,7 @@ class TimeTableView : ViewGroup {
     private var onCardLongClickListener: OnCardLongClickListener? = null
     private val mPathEffect = DashPathEffect(floatArrayOf(20f, 20f), 0f)
     private val mLinePaint = Paint()
+    private var bgSettings: BackgroundSettings? = null
 
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
         typedTimeTableView(attrs, 0)
@@ -67,12 +71,42 @@ class TimeTableView : ViewGroup {
         this.onCardLongClickListener = onCardLongClickListener
     }
 
+    fun setBackgroundSettings(settings: BackgroundSettings?) {
+        this.bgSettings = settings
+        invalidate()
+    }
+
     override fun dispatchDraw(canvas: Canvas) {
+        drawBackgroundImage(canvas)
         if (TimeTools.isSameWeekWithStartDate(startDate, System.currentTimeMillis())) {
             drawTodayRect(canvas)
         }
         drawLabels(canvas)
         super.dispatchDraw(canvas)
+    }
+
+    private fun drawBackgroundImage(canvas: Canvas) {
+        try {
+            val s = bgSettings ?: return
+            if (!s.enabled) return
+            if (mWidth <= 0 || mHeight <= 0) return
+            val paint = Paint()
+            paint.alpha = ((100 - s.transparency) / 100f * 255).toInt()
+
+            if (s.bgColor.isNotBlank()) {
+                paint.style = Paint.Style.FILL
+                paint.color = android.graphics.Color.parseColor(s.bgColor)
+                canvas.drawRect(0f, 0f, mWidth.toFloat(), mHeight.toFloat(), paint)
+                return
+            }
+            if (s.imageUri.isBlank()) return
+            val bitmap = BackgroundHelper.getProcessedBitmap(
+                s.imageUri, s.blurRadius, mWidth, mHeight, s.fitMode
+            ) ?: return
+            canvas.drawBitmap(bitmap, null, Rect(0, 0, mWidth, mHeight), paint)
+        } catch (e: Exception) {
+            // Gracefully skip background on error — prevents crash loop
+        }
     }
 
     private fun typedTimeTableView(attrs: AttributeSet, defStyleAttr: Int) {

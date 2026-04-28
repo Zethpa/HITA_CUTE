@@ -4,8 +4,8 @@ plugins {
     id 'kotlin-kapt'
 }
 
-def appVersionCodeValue = 2026040701
-def appVersionNameValue = "1.5.2"
+def appVersionCodeValue = 2026042801
+def appVersionNameValue = "1.6.0"
 
 
 android {
@@ -30,11 +30,11 @@ android {
 
         buildConfigField "String", "HOA_BASE_URL", '"http://47.115.160.70:8081"'
         buildConfigField "String", "HOA_API_KEY", '""'
-        buildConfigField "String", "UPDATE_URL", '"https://github.com/LiPu-jpg/HITA_L/releases/latest"'
+        buildConfigField "String", "UPDATE_URL", '""'
         buildConfigField "String", "UPDATE_VERSION_NAME", "\"${appVersionNameValue}\""
         buildConfigField "long", "UPDATE_VERSION_CODE", "${appVersionCodeValue}L"
         buildConfigField "String", "UPDATE_LOG", '""'
-        buildConfigField "boolean", "UPDATE_ALLOW_PRERELEASE", "true"
+        buildConfigField "boolean", "UPDATE_ALLOW_PRERELEASE", "false"
     }
 //    viewBinding{
 //        enabled = true
@@ -55,6 +55,13 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all {
+            outputFileName = "HiTA_CuTE.apk"
         }
     }
 

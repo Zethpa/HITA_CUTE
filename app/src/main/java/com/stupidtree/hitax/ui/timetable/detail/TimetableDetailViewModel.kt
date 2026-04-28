@@ -9,6 +9,7 @@ import com.stupidtree.component.data.StringTrigger
 import com.stupidtree.hitax.data.model.timetable.TermSubject
 import com.stupidtree.hitax.data.model.timetable.TimePeriodInDay
 import com.stupidtree.hitax.data.model.timetable.Timetable
+import com.stupidtree.hitax.data.repository.ColorPaletteRepository
 import com.stupidtree.hitax.data.repository.SubjectRepository
 import com.stupidtree.hitax.data.repository.TimetableRepository
 
@@ -18,6 +19,7 @@ class TimetableDetailViewModel(application: Application) : AndroidViewModel(appl
      */
     private val timetableRepository = TimetableRepository.getInstance(application)
     private val subjectsRepository = SubjectRepository.getInstance(application)
+    private val colorPaletteRepository = ColorPaletteRepository.getInstance(application)
 
 
     /**
@@ -83,6 +85,7 @@ class TimetableDetailViewModel(application: Application) : AndroidViewModel(appl
 
     fun startChangeSubjectColor(subjectId:String,color:Int) {
         subjectsRepository.actionChangeSubjectColor(subjectId,color)
+        colorPaletteRepository.setCustomColor(subjectId, color)
     }
     fun exportToIcs() {
         timetableLiveData.value?.let {

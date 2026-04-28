@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <FrameLayout
+        android:layout_width="52dp"
+        android:layout_height="30dp">
+
+        <ImageView
+            android:id="@+id/color_swatch"
+            android:layout_width="52dp"
+            android:layout_height="30dp"
+            android:contentDescription="@string/theme_accent_color" />
+
+        <View
+            android:id="@+id/check_mark"
+            android:layout_width="10dp"
+            android:layout_height="10dp"
+            android:layout_gravity="bottom|end"
+            android:background="@drawable/element_check_circle"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/theme_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:maxLines="1"
+        android:textColor="?attr/textColorPrimary"
+        android:textSize="10sp" />
+
+</LinearLayout>

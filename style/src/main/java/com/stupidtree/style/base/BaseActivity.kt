@@ -18,6 +18,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewbinding.ViewBinding
 import com.stupidtree.style.R
+import com.stupidtree.style.ThemeConfig
 import com.stupidtree.style.ThemeTools
 
 /**
@@ -44,8 +45,15 @@ abstract class BaseActivity<T : ViewModel, V : ViewBinding> : AppCompatActivity(
 
     //为Activity中的View设置行为
     protected abstract fun initViews()
+    private fun applyAppThemeColor() {
+        val resId = ThemeConfig.themeStyleRes
+        if (resId != 0) {
+            (this as android.app.Activity).setTheme(resId)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        //setTranslucentStatusBar()
+        applyAppThemeColor()
         val mode = when (ThemeTools.getThemeMode(this)) {
             ThemeTools.MODE.DARK -> AppCompatDelegate.MODE_NIGHT_YES
             ThemeTools.MODE.LIGHT -> AppCompatDelegate.MODE_NIGHT_NO

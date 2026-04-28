@@ -90,7 +90,6 @@ class TimetableManagerActivity :
                     TimetableListAdapter.SOURCE.ICS -> {
                         selectIcsLauncher.launch(IcsImportUtils.pickerMimeTypes())
                     }
-                    else -> {}
                 }
             }
 

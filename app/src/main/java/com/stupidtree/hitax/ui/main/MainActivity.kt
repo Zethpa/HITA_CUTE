@@ -2,6 +2,7 @@ package com.stupidtree.hitax.ui.main
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
@@ -21,8 +22,10 @@ import androidx.fragment.app.Fragment
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import com.stupidtree.component.data.DataState
 import com.stupidtree.hitax.R
+import com.stupidtree.hitax.data.repository.BackgroundRepository
 import com.stupidtree.hitax.data.repository.EasSettingsRepository
 import com.stupidtree.hitax.data.repository.EASRepository
+
 import com.stupidtree.hitax.databinding.ActivityMainBinding
 import com.stupidtree.hitax.ui.about.ActivityAbout
 import com.stupidtree.hitax.ui.about.UserAgreementDialog
@@ -32,8 +35,10 @@ import com.stupidtree.hitax.ui.main.navigation.NavigationFragment
 import com.stupidtree.hitax.ui.main.timeline.FragmentTimeLine
 import com.stupidtree.hitax.ui.main.timetable.TimetableFragment
 import com.stupidtree.hitax.ui.main.timetable.panel.FragmentTimetablePanel
+import com.stupidtree.hitax.ui.style.PopUpBackgroundSettings
 import com.stupidtree.hitax.ui.widgets.WidgetUtils
 import com.stupidtree.hitax.utils.ActivityUtils
+import com.stupidtree.hitax.utils.BackgroundHelper
 import com.stupidtree.hitax.utils.ImageUtils
 import com.stupidtree.stupiduser.data.repository.LocalUserRepository
 import com.stupidtree.style.ThemeTools
@@ -107,6 +112,9 @@ class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>(),
                 }
                 R.id.drawer_nav_about -> {
                     ActivityUtils.startActivity(getThis(), ActivityAbout::class.java)
+                }
+                R.id.drawer_nav_background -> {
+                    PopUpBackgroundSettings().show(supportFragmentManager, "bgSettings")
                 }
                 else -> jumped = false
             }
@@ -255,6 +263,35 @@ class MainActivity : BaseActivity<MainViewModel, ActivityMainBinding>(),
             ThemeTools.switchTheme(getThis())
             WidgetUtils.sendRefreshToAll(this)
         }
+
+        val bgRepo = BackgroundRepository.getInstance(application)
+        bgRepo.getSettingsLiveData().observe(this) { settings ->
+            try {
+                if (settings.enabled) {
+                    if (settings.bgColor.isNotBlank()) {
+                        binding.drawer.setBackgroundColor(android.graphics.Color.parseColor(settings.bgColor))
+                    } else if (settings.imageUri.isNotBlank()) {
+                        val bitmap = BackgroundHelper.getProcessedBitmap(
+                            settings.imageUri,
+                            settings.blurRadius,
+                            resources.displayMetrics.widthPixels,
+                            resources.displayMetrics.heightPixels,
+                            settings.fitMode
+                        )
+                        if (bitmap != null) {
+                            val drawable = BitmapDrawable(resources, bitmap)
+                            drawable.alpha = ((100 - settings.transparency) / 100f * 255).toInt()
+                            binding.drawer.background = drawable
+                        }
+                    }
+                } else {
+                    binding.drawer.background = null
+                }
+            } catch (_: Exception) {
+                binding.drawer.background = null
+            }
+        }
+
         viewModel.checkUpdateResult.observe(this) {
             if (it.state == DataState.STATE.SUCCESS) {
                 it.data?.let { cr ->

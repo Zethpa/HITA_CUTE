@@ -3,18 +3,17 @@ package com.stupidtree.hitax.utils
 object ColorTools {
     private const val TIME_INTERVAL = 1000 * 60.toLong()
     var lastTimestamp: Long = 0
-    var colors_material = arrayOf(
-        "#ec407a",
-        "#FF9E00",
-        "#7c4dff",
-        "#536dfe",
-        "#2196f3",
-        "#26c6da",
-        "#009688",
-        "#7cba59",
-        "#E96D71",
-    )
+    var colors_material = ColorPalette.MATERIAL.colors.toTypedArray()
     var colorsQueue = mutableListOf<String>()
+
+    var activePalette: ColorPalette.Palette = ColorPalette.MATERIAL
+
+    fun applyPalette(palette: ColorPalette.Palette) {
+        activePalette = palette
+        colors_material = palette.colors.toTypedArray()
+        colorsQueue.clear()
+        lastTimestamp = 0
+    }
 
     fun randomColorMaterial(): Int {
         //超过时间，重置队列

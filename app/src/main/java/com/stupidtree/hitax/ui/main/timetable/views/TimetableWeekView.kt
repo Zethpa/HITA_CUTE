@@ -22,6 +22,8 @@ class TimetableWeekView: LinearLayout{
         timetableView?.init()
     }
 
+    fun getTimeTableView(): TimeTableView? = timetableView
+
     fun getStyleSheet(): TimetableStyleSheet? {
         return timetableView?.styleSheet
     }

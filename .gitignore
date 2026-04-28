@@ -18,3 +18,9 @@
 local.properties
 /.idea/
 .worktrees
+.claude/
+CLAUDE.md
+docs/plans/
+*.apk
+*.jks
+app/build/

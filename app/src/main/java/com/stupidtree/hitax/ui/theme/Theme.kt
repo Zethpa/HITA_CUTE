@@ -11,31 +11,35 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
-
-private val DarkColors = darkColors(
-    primary = Color(0x304ffe),
-    primaryVariant = Color(0x3C8CE7),
-    secondary = Color(0x3C8CE7),
-    onPrimary = Color(0xFF000000),
-    onSecondary = Color(0xFF808080)
-)
-
-private val LightColors = lightColors(
-    primary = Color(0x304ffe),
-    primaryVariant = Color(0x3C8CE7),
-    secondary = Color(0x3C8CE7),
-    onPrimary = Color(0xFFffff),
-    onSecondary = Color(0xFF4f4f4f)
-)
-
+var composePrimaryColor: Int? = null
 
 @Composable
 fun AppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
+    val primaryColor = composePrimaryColor?.let { Color(it.toInt()) } ?: Color(0x304ffe)
+
+    val colors = if (darkTheme) {
+        darkColors(
+            primary = primaryColor,
+            primaryVariant = primaryColor,
+            secondary = primaryColor,
+            onPrimary = Color(0xFF000000),
+            onSecondary = Color(0xFF808080)
+        )
+    } else {
+        lightColors(
+            primary = primaryColor,
+            primaryVariant = primaryColor,
+            secondary = primaryColor,
+            onPrimary = Color(0xFFffffff),
+            onSecondary = Color(0xFF4f4f4f)
+        )
+    }
+
     MaterialTheme(
-        colors = if (darkTheme) DarkColors else LightColors,
+        colors = colors,
         content = content
     )
 }
